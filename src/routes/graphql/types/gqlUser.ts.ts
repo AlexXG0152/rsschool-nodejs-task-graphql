@@ -17,12 +17,13 @@ export const user = new GraphQLObjectType({
 
 export const allUserData = async (fastify: FastifyInstance) => {
   const userData = new GraphQLObjectType({
-    name: "UserProfiles",
+    name: "allUserData",
     fields: {
       user: {
         type: user,
         resolve: async (parent: UserEntity) => parent,
       },
+
       subscribedToUser: {
         type: new GraphQLList(user),
         resolve: async (parent: UserEntity) => {
@@ -30,10 +31,10 @@ export const allUserData = async (fastify: FastifyInstance) => {
             key: "subscribedToUserIds",
             inArray: parent.id,
           });
-
           return subscribedToUser;
         },
       },
+
       profile: {
         type: profile,
         resolve: async (parent: UserEntity) => {
@@ -41,10 +42,10 @@ export const allUserData = async (fastify: FastifyInstance) => {
             key: "userId",
             equals: parent.id,
           });
-
           return profile;
         },
       },
+
       posts: {
         type: new GraphQLList(post),
         resolve: async (parent: UserEntity) => {
@@ -52,7 +53,6 @@ export const allUserData = async (fastify: FastifyInstance) => {
             key: "userId",
             equals: parent.id,
           });
-
           return posts;
         },
       },

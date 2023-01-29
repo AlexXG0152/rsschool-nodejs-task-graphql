@@ -63,13 +63,13 @@ export const query = async (fastify: FastifyInstance) => {
         resolve: async () => fastify.db.users.findMany(),
       },
       oneUserAllData: {
-        type: (userData),
+        type: userData,
         args: {
           id: { type: GraphQLString },
         },
         resolve: async (_parent, args) =>
           fastify.db.users.findOne({ key: "id", equals: args.id }),
-      }, 
+      },
     },
   });
 };
