@@ -3,6 +3,7 @@ import { UserEntity } from "../../../utils/DB/entities/DBUsers";
 import { profile } from "./gqlProfile";
 import { FastifyInstance } from "fastify/types/instance";
 import { post } from "./gqlPost";
+import { memberType } from "./gqlMemberType";
 
 export const user = new GraphQLObjectType({
   name: "User",
@@ -24,36 +25,53 @@ export const allUserData = async (fastify: FastifyInstance) => {
         resolve: async (parent: UserEntity) => parent,
       },
 
+      users: {
+        type: new GraphQLList(user),
+        resolve: async () => await fastify.db.users.findMany(),
+      },
+
       subscribedToUser: {
         type: new GraphQLList(user),
         resolve: async (parent: UserEntity) => {
-          const subscribedToUser = await fastify.db.users.findMany({
-            key: "subscribedToUserIds",
-            inArray: parent.id,
-          });
-          return subscribedToUser;
+          return parent.subscribedToUserIds.map(
+            async (id) =>
+              await fastify.db.users.findOne({ key: "id", equals: id })
+          );
         },
       },
 
       profile: {
         type: profile,
         resolve: async (parent: UserEntity) => {
-          const profile = await fastify.db.profiles.findOne({
+          return await fastify.db.profiles.findOne({
             key: "userId",
             equals: parent.id,
           });
-          return profile;
         },
       },
 
       posts: {
         type: new GraphQLList(post),
         resolve: async (parent: UserEntity) => {
-          const posts = await fastify.db.posts.findMany({
+          return await fastify.db.posts.findMany({
             key: "userId",
             equals: parent.id,
           });
-          return posts;
+        },
+      },
+
+      memberType: {
+        type: memberType,
+        resolve: async (parent: UserEntity) => {
+          const profile = await fastify.db.profiles.findOne({
+            key: "userId",
+            equals: parent.id,
+          });
+
+          return await fastify.db.memberTypes.findOne({
+            key: "id",
+            equals: profile!.memberTypeId,
+          });
         },
       },
     },
